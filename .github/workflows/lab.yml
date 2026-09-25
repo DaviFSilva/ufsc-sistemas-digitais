@@ -14,15 +14,22 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install GHDL
+      - name: Setup GHDL
+        uses: ghdl/setup-ghdl@v1
+        with:
+          version: nightly
+          backend: mcode
+
+      - name: Check GHDL tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ghdl
+          ghdl --version
+          command -v ghwdump
+          ghwdump -h | head -5
 
       - name: Resolve selected lab
         id: lab
