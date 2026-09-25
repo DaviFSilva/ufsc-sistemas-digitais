@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# GHDL's GCC backend shells out to `as`. Cross-toolchains (e.g. arm-none-eabi)
+# often shadow the host assembler and produce dozens of fake asm errors.
+export PATH="/usr/bin:/bin:${PATH}"
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
