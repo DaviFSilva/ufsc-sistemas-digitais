@@ -65,9 +65,9 @@ pack: build
 
 clean:
 ifeq ($(origin LAB),command line)
-	rm -rf $(LABS_DIR)/$(LAB)/build
+	rm -rf $(LABS_DIR)/$(LAB)/build $(LABS_DIR)/$(LAB)/artifact
 	rm -f $(LABS_DIR)/$(LAB)/wave.svg $(LABS_DIR)/$(LAB)/$(LAB).zip
 else
-	rm -rf $(LABS_DIR)/*/build
+	rm -rf $(LABS_DIR)/*/build $(LABS_DIR)/*/artifact
 	rm -f $(LABS_DIR)/*/wave.svg $(LABS_DIR)/*/*.zip
 endif

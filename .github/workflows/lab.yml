@@ -51,12 +51,12 @@ jobs:
       - name: Build and simulate
         run: ./scripts/build-lab.sh "${{ steps.lab.outputs.name }}"
 
-      - name: Pack artifact zip
-        run: ./scripts/pack-lab.sh "${{ steps.lab.outputs.name }}"
+      - name: Stage artifact
+        run: ./scripts/pack-lab.sh --no-zip "${{ steps.lab.outputs.name }}"
 
       - name: Upload lab artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.lab.outputs.name }}
-          path: labs/${{ steps.lab.outputs.name }}/${{ steps.lab.outputs.name }}.zip
+          path: labs/${{ steps.lab.outputs.name }}/artifact/
           if-no-files-found: error
