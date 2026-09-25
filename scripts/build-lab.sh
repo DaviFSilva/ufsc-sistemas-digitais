@@ -24,10 +24,16 @@ if [[ -z "$LAB" ]]; then
 fi
 
 LAB_DIR="labs/$LAB"
+SRC_DIR="$LAB_DIR/src"
 MANIFEST="$LAB_DIR/lab.yml"
 
 if [[ ! -d "$LAB_DIR" ]]; then
   echo "error: lab directory not found: $LAB_DIR" >&2
+  exit 1
+fi
+
+if [[ ! -d "$SRC_DIR" ]]; then
+  echo "error: source directory not found: $SRC_DIR" >&2
   exit 1
 fi
 
@@ -91,7 +97,9 @@ if [[ ${#SRC_FILES[@]} -eq 0 || -z "$TESTBENCH" ]]; then
 fi
 
 WORK_DIR="$LAB_DIR/build"
+WAVE_SVG="$LAB_DIR/wave.svg"
 rm -rf "$WORK_DIR"
+rm -f "$WAVE_SVG"
 mkdir -p "$WORK_DIR"
 
 echo "==> Building lab: $LAB"
@@ -99,11 +107,11 @@ echo "==> Testbench: $TESTBENCH"
 
 ABS_SOURCES=()
 for src in "${SRC_FILES[@]}"; do
-  if [[ ! -f "$LAB_DIR/$src" ]]; then
-    echo "error: source not found: $LAB_DIR/$src" >&2
+  if [[ ! -f "$SRC_DIR/$src" ]]; then
+    echo "error: source not found: $SRC_DIR/$src" >&2
     exit 1
   fi
-  ABS_SOURCES+=("../$src")
+  ABS_SOURCES+=("../src/$src")
 done
 
 (
@@ -122,12 +130,12 @@ done
 )
 
 if [[ -f "$WORK_DIR/wave.ghw" ]]; then
-  echo "==> plotting $WORK_DIR/wave.svg"
+  echo "==> plotting $WAVE_SVG"
   python3 "$ROOT/scripts/ghw-to-svg.py" "$WORK_DIR/wave.ghw" \
-    -o "$WORK_DIR/wave.svg" \
+    -o "$WAVE_SVG" \
     --title "$LAB"
 fi
 
 echo "==> OK: $LAB"
 echo "    GHW: $WORK_DIR/wave.ghw"
-echo "    SVG: $WORK_DIR/wave.svg"
+echo "    SVG: $WAVE_SVG"
