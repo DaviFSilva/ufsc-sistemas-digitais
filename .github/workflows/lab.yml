@@ -42,3 +42,12 @@ jobs:
 
       - name: Build and simulate
         run: ./scripts/build-lab.sh "${{ steps.lab.outputs.name }}"
+
+      - name: Upload waveforms
+        uses: actions/upload-artifact@v4
+        with:
+          name: waves-${{ steps.lab.outputs.name }}
+          path: |
+            labs/${{ steps.lab.outputs.name }}/build/wave.ghw
+            labs/${{ steps.lab.outputs.name }}/build/wave.svg
+          if-no-files-found: error

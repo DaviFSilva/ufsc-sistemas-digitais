@@ -117,8 +117,17 @@ done
   echo "==> ghdl -e $TESTBENCH"
   ghdl -e --std=08 "$TESTBENCH"
 
-  echo "==> ghdl -r $TESTBENCH"
-  ghdl -r --std=08 "$TESTBENCH" --assert-level=error --stop-time=1ms
+  echo "==> ghdl -r $TESTBENCH (GHW -> wave.ghw)"
+  ghdl -r --std=08 "$TESTBENCH" --assert-level=error --stop-time=1ms --wave=wave.ghw
 )
 
+if [[ -f "$WORK_DIR/wave.ghw" ]]; then
+  echo "==> plotting $WORK_DIR/wave.svg"
+  python3 "$ROOT/scripts/ghw-to-svg.py" "$WORK_DIR/wave.ghw" \
+    -o "$WORK_DIR/wave.svg" \
+    --title "$LAB"
+fi
+
 echo "==> OK: $LAB"
+echo "    GHW: $WORK_DIR/wave.ghw"
+echo "    SVG: $WORK_DIR/wave.svg"
