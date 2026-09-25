@@ -1,0 +1,4 @@
+labs/*/build/
+labs/*/artifact/
+labs/*/wave.svg
+labs/*/*.zip

@@ -1,0 +1,62 @@
+name: Lab CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      lab:
+        description: Lab folder under labs/ (leave empty to use .ci-lab)
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup GHDL
+        uses: ghdl/setup-ghdl@v1
+        with:
+          version: nightly
+          backend: mcode
+
+      - name: Check GHDL tools
+        run: |
+          ghdl --version
+          command -v ghwdump
+          ghwdump -h | head -5
+
+      - name: Resolve selected lab
+        id: lab
+        run: |
+          if [ -n "${{ inputs.lab }}" ]; then
+            LAB="${{ inputs.lab }}"
+            echo "Using workflow_dispatch input: $LAB"
+          else
+            LAB="$(tr -d '[:space:]' < .ci-lab)"
+            echo "Using .ci-lab: $LAB"
+          fi
+          if [ -z "$LAB" ]; then
+            echo "error: lab name is empty" >&2
+            exit 1
+          fi
+          echo "name=$LAB" >> "$GITHUB_OUTPUT"
+          echo "Building lab: $LAB"
+
+      - name: Build and simulate
+        run: ./scripts/build-lab.sh "${{ steps.lab.outputs.name }}"
+
+      - name: Stage artifact
+        run: ./scripts/pack-lab.sh --no-zip "${{ steps.lab.outputs.name }}"
+
+      - name: Upload lab artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.lab.outputs.name }}
+          path: labs/${{ steps.lab.outputs.name }}/artifact/
+          if-no-files-found: error

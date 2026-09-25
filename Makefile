@@ -1,0 +1,73 @@
+# Usage:
+#   make              # build + simulate lab from .ci-lab
+#   make LAB=name     # build a specific lab
+#   make select LAB=name
+#   make list
+#   make wave         # build, then open GHW in GTKWave (local)
+#   make pack         # build, then zip wave.svg + src/ + build/
+#   make clean
+
+.PHONY: all build run select list which clean help wave pack
+
+CI_LAB_FILE := .ci-lab
+LABS_DIR    := labs
+BUILD_SCRIPT := ./scripts/build-lab.sh
+PACK_SCRIPT  := ./scripts/pack-lab.sh
+
+# LAB from command line, else contents of .ci-lab
+LAB ?= $(shell tr -d '[:space:]' < $(CI_LAB_FILE) 2>/dev/null)
+WAVE_GHW := $(LABS_DIR)/$(LAB)/build/wave.ghw
+
+all: build
+
+help:
+	@echo "Targets:"
+	@echo "  make / make build   Build, simulate, dump GHW + SVG"
+	@echo "  make LAB=<name>     Build a specific lab (does not change .ci-lab)"
+	@echo "  make select LAB=<name>  Set .ci-lab to <name>"
+	@echo "  make which          Show the lab selected in .ci-lab"
+	@echo "  make list           List labs under $(LABS_DIR)/"
+	@echo "  make wave           Build, then open GHW in GTKWave"
+	@echo "  make pack           Build, then zip wave.svg + src/ + build/"
+	@echo "  make clean          Remove GHDL build dirs and generated waves/zips"
+	@echo "  make clean LAB=<name>   Clean one lab only"
+
+which:
+	@if [ -z "$(LAB)" ]; then echo "error: no lab selected (.ci-lab empty?)" >&2; exit 1; fi
+	@echo "$(LAB)"
+
+list:
+	@ls -1 $(LABS_DIR) 2>/dev/null || echo "(no labs yet)"
+
+select:
+	@if [ -z "$(LAB)" ]; then echo "usage: make select LAB=<name>" >&2; exit 1; fi
+	@if [ ! -d "$(LABS_DIR)/$(LAB)" ]; then echo "error: $(LABS_DIR)/$(LAB) not found" >&2; exit 1; fi
+	@printf '%s\n' "$(LAB)" > $(CI_LAB_FILE)
+	@echo "selected: $(LAB)"
+
+build run:
+	@if [ -z "$(LAB)" ]; then echo "error: no lab selected; set .ci-lab or use LAB=<name>" >&2; exit 1; fi
+	@$(BUILD_SCRIPT) "$(LAB)"
+
+wave: build
+	@if [ ! -f "$(WAVE_GHW)" ]; then echo "error: missing $(WAVE_GHW)" >&2; exit 1; fi
+	@if command -v gtkwave >/dev/null 2>&1; then \
+		echo "==> opening $(WAVE_GHW) in GTKWave"; \
+		gtkwave "$(WAVE_GHW)" >/dev/null 2>&1 & \
+	else \
+		echo "GTKWave not installed. Open locally:"; \
+		echo "  gtkwave $(WAVE_GHW)"; \
+		exit 1; \
+	fi
+
+pack: build
+	@$(PACK_SCRIPT) "$(LAB)"
+
+clean:
+ifeq ($(origin LAB),command line)
+	rm -rf $(LABS_DIR)/$(LAB)/build $(LABS_DIR)/$(LAB)/artifact
+	rm -f $(LABS_DIR)/$(LAB)/wave.svg $(LABS_DIR)/$(LAB)/$(LAB).zip
+else
+	rm -rf $(LABS_DIR)/*/build $(LABS_DIR)/*/artifact
+	rm -f $(LABS_DIR)/*/wave.svg $(LABS_DIR)/*/*.zip
+endif
