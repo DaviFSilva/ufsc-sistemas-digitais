@@ -1,0 +1,4 @@
+sources:
+  - fsm_rps.vhdl
+  - fsm_rps_tb.vhdl
+testbench: fsm_rps_tb

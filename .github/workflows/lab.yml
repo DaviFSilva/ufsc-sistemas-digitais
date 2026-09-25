@@ -1,0 +1,44 @@
+name: Lab CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      lab:
+        description: Lab folder under labs/ (leave empty to use .ci-lab)
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install GHDL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ghdl
+
+      - name: Resolve selected lab
+        id: lab
+        run: |
+          if [ -n "${{ inputs.lab }}" ]; then
+            LAB="${{ inputs.lab }}"
+            echo "Using workflow_dispatch input: $LAB"
+          else
+            LAB="$(tr -d '[:space:]' < .ci-lab)"
+            echo "Using .ci-lab: $LAB"
+          fi
+          if [ -z "$LAB" ]; then
+            echo "error: lab name is empty" >&2
+            exit 1
+          fi
+          echo "name=$LAB" >> "$GITHUB_OUTPUT"
+          echo "Building lab: $LAB"
+
+      - name: Build and simulate
+        run: ./scripts/build-lab.sh "${{ steps.lab.outputs.name }}"
