@@ -2,3 +2,9 @@ labs/*/build/
 labs/*/artifact/
 labs/*/wave.svg
 labs/*/*.zip
+scripts/__pycache__
+ap2/rtl/db/
+ap2/rtl/incremental_db/
+ap2/rtl/output_files/
+ap2/rtl/simulation/
+ap2/rtl/*.qws

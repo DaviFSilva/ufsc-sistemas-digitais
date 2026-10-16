@@ -1,0 +1,11 @@
+{
+  "utilizacao": {
+    "total_combinational_functions": 51,
+    "dedicated_logic_registers": 27,
+    "total_pins": 41
+  },
+  "atraso": {
+    "Fmax": 348.19,
+    "unidade": "MHz"
+  }
+}
